@@ -203,10 +203,11 @@ please get in touch with support@openspeedtest.com.
               ispBannerContent.textContent = bannerText;
               ispBanner.style.display = 'block';
             }
-            // Detail lengkap (ports, vulns, hostnames, tags, flags, latency, dll)
+            // Detail lengkap (ports, vulns, hostnames, tags, flags, latency, lokasi, cpes, dll)
             const details = [];
             if (shodan.ports && shodan.ports.length) details.push(`<b>Open Ports:</b> ${shodan.ports.join(', ')}`);
             if (shodan.vulns && shodan.vulns.length) details.push(`<b>Vulnerabilities:</b> ${shodan.vulns.join(', ')}`);
+            if (shodan.cpes && shodan.cpes.length) details.push(`<b>CPEs:</b> ${shodan.cpes.join(', ')}`);
             if (shodan.hostnames && shodan.hostnames.length) details.push(`<b>Hostnames:</b> ${shodan.hostnames.join(', ')}`);
             if (shodan.tags && shodan.tags.length) details.push(`<b>Tags:</b> ${shodan.tags.join(', ')}`);
             if (network.latencyMs) details.push(`<b>Latency:</b> ${network.latencyMs} ms`);
