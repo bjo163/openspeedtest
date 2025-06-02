@@ -155,6 +155,9 @@ please get in touch with support@openspeedtest.com.
   </div>
   <object style="visibility:hidden" id="OpenSpeedTest-UI" data="assets/images/app.svg" type="image/svg+xml"></object>
  
+  <div id="isp-banner" style="display:none;position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;border-radius:24px;padding:12px 32px;box-shadow:0 4px 24px rgba(0,0,0,0.13);z-index:1000;font-size:17px;font-weight:500;color:#0078d7;letter-spacing:0.2px;">
+    <span id="isp-banner-content"></span>
+  </div>
   <div class="Credits" style="background:#f8f9fa;padding:18px 0 10px 0;text-align:center;border-radius:8px;margin-top:24px;box-shadow:0 2px 12px rgba(0,0,0,0.07);">
     <a id="dynamic-server-name" href="#" style="font-weight:bold;font-size:18px;color:#0078d7;text-decoration:none;">SpeedTest by OpenSpeedTest™</a>
     <span id="isp-info" style="display:block;margin:8px 0 0 0;font-size:15px;color:#444;"></span>
@@ -171,10 +174,20 @@ please get in touch with support@openspeedtest.com.
       serverNameLink.textContent = `SpeedTest by ${domain}`;
       serverNameLink.href = `//${domain}`;
     }
-    // Ambil nama ISP dari IP publik
+    // Ambil nama ISP dari IP publik dan tampilkan di banner atas
     fetch('https://ipapi.co/json/')
       .then(r => r.json())
       .then(data => {
+        const ispBanner = document.getElementById('isp-banner');
+        const ispBannerContent = document.getElementById('isp-banner-content');
+        if (ispBanner && ispBannerContent && data.org && data.ip) {
+          ispBannerContent.textContent = `You are connected via ${data.org} (IP: ${data.ip})`;
+          ispBanner.style.display = 'block';
+        } else if (ispBanner && ispBannerContent && data.ip) {
+          ispBannerContent.textContent = `Your IP: ${data.ip}`;
+          ispBanner.style.display = 'block';
+        }
+        // Tetap isi info di footer juga
         const ispInfo = document.getElementById('isp-info');
         if (ispInfo && data.org && data.ip) {
           ispInfo.textContent = `Your ISP: ${data.org} (IP: ${data.ip})`;
@@ -183,6 +196,8 @@ please get in touch with support@openspeedtest.com.
         }
       })
       .catch(() => {
+        const ispBanner = document.getElementById('isp-banner');
+        if (ispBanner) ispBanner.style.display = 'none';
         const ispInfo = document.getElementById('isp-info');
         if (ispInfo) ispInfo.textContent = '';
       });
