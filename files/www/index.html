@@ -155,9 +155,10 @@ please get in touch with support@openspeedtest.com.
   </div>
   <object style="visibility:hidden" id="OpenSpeedTest-UI" data="assets/images/app.svg" type="image/svg+xml"></object>
  
-  <div id="isp-banner" style="display:none;position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;border-radius:24px;padding:12px 32px;box-shadow:0 4px 24px rgba(0,0,0,0.13);z-index:1000;font-size:17px;font-weight:500;color:#0078d7;letter-spacing:0.2px;">
+  <div id="isp-banner" style="display:none;position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;border-radius:24px;padding:12px 32px;box-shadow:0 4px 24px rgba(0,0,0,0.13);z-index:1000;font-size:17px;font-weight:500;color:#0078d7;letter-spacing:0.2px;max-width:90vw;">
     <span id="isp-banner-content"></span>
-    <button id="close-isp-banner" style="margin-left:18px;background:none;border:none;font-size:18px;cursor:pointer;color:#0078d7;">×</button>
+    <div id="isp-banner-details" style="font-size:14px;color:#222;margin-top:6px;"></div>
+    <button id="close-isp-banner" style="margin-left:18px;background:none;border:none;font-size:18px;cursor:pointer;color:#0078d7;position:absolute;top:8px;right:18px;">×</button>
   </div>
   <div class="Credits" style="background:#f8f9fa;padding:18px 0 10px 0;text-align:center;border-radius:8px;margin-top:24px;box-shadow:0 2px 12px rgba(0,0,0,0.07);">
     <a id="dynamic-server-name" href="#" style="font-weight:bold;font-size:18px;color:#0078d7;text-decoration:none;">SpeedTest by OpenSpeedTest™</a>
@@ -175,41 +176,67 @@ please get in touch with support@openspeedtest.com.
       serverNameLink.textContent = `SpeedTest by ${domain}`;
       serverNameLink.href = `//${domain}`;
     }
-    // Ambil nama ISP, ASN, dan info lain dari IP publik dan tampilkan di banner atas
-    fetch('https://ipapi.co/json/')
+    // Ambil IP publik user
+    fetch('https://api.ipify.org?format=json')
       .then(r => r.json())
-      .then(data => {
-        const ispBanner = document.getElementById('isp-banner');
-        const ispBannerContent = document.getElementById('isp-banner-content');
-        let bannerText = '';
-        if (data.org) bannerText += `ISP: ${data.org}`;
-        if (data.asn) bannerText += ` | ASN: ${data.asn}`;
-        if (data.country_name) bannerText += ` | Country: ${data.country_name}`;
-        if (data.region) bannerText += ` | Region: ${data.region}`;
-        if (data.city) bannerText += ` | City: ${data.city}`;
-        if (data.ip) bannerText += ` | IP: ${data.ip}`;
-        if (ispBanner && ispBannerContent && bannerText) {
-          ispBannerContent.textContent = bannerText;
-          ispBanner.style.display = 'block';
-        }
-        // Tetap isi info di footer juga
-        const ispInfo = document.getElementById('isp-info');
-        let footerText = '';
-        if (data.org) footerText += `ISP: ${data.org}`;
-        if (data.asn) footerText += ` | ASN: ${data.asn}`;
-        if (data.country_name) footerText += ` | Country: ${data.country_name}`;
-        if (data.region) footerText += ` | Region: ${data.region}`;
-        if (data.city) footerText += ` | City: ${data.city}`;
-        if (data.ip) footerText += ` | IP: ${data.ip}`;
-        if (ispInfo && footerText) {
-          ispInfo.textContent = footerText;
-        }
-      })
-      .catch(() => {
-        const ispBanner = document.getElementById('isp-banner');
-        if (ispBanner) ispBanner.style.display = 'none';
-        const ispInfo = document.getElementById('isp-info');
-        if (ispInfo) ispInfo.textContent = '';
+      .then(ipData => {
+        const ip = ipData.ip;
+        axios.get(`https://backend-api.apps.pundidigitaldynamics.net/api/v1/network/tools/ipinfo?host=${ip}`)
+          .then(res => {
+            const data = res.data && res.data.data;
+            if (!data) return;
+            const basic = data.basic || {};
+            const geo = data.geo || {};
+            const network = data.network || {};
+            const shodan = data.shodan || {};
+            // Banner utama
+            const ispBanner = document.getElementById('isp-banner');
+            const ispBannerContent = document.getElementById('isp-banner-content');
+            let bannerText = '';
+            if (network.isp) bannerText += `ISP: ${network.isp}`;
+            if (network.asn) bannerText += ` | ASN: ${network.asn}`;
+            if (geo.city) bannerText += ` | City: ${geo.city}`;
+            if (geo.regionName) bannerText += ` | Region: ${geo.regionName}`;
+            if (geo.country) bannerText += ` | Country: ${geo.country}`;
+            if (basic.ip) bannerText += ` | IP: ${basic.ip}`;
+            if (ispBanner && ispBannerContent && bannerText) {
+              ispBannerContent.textContent = bannerText;
+              ispBanner.style.display = 'block';
+            }
+            // Detail lengkap (ports, vulns, hostnames, tags, flags, latency, dll)
+            const details = [];
+            if (shodan.ports && shodan.ports.length) details.push(`<b>Open Ports:</b> ${shodan.ports.join(', ')}`);
+            if (shodan.vulns && shodan.vulns.length) details.push(`<b>Vulnerabilities:</b> ${shodan.vulns.join(', ')}`);
+            if (shodan.hostnames && shodan.hostnames.length) details.push(`<b>Hostnames:</b> ${shodan.hostnames.join(', ')}`);
+            if (shodan.tags && shodan.tags.length) details.push(`<b>Tags:</b> ${shodan.tags.join(', ')}`);
+            if (network.latencyMs) details.push(`<b>Latency:</b> ${network.latencyMs} ms`);
+            if (data.flags) {
+              const flags = [];
+              if (data.flags.proxy) flags.push('Proxy');
+              if (data.flags.hosting) flags.push('Hosting');
+              if (data.flags.mobile) flags.push('Mobile');
+              if (data.flags.blacklisted) flags.push('Blacklisted');
+              if (flags.length) details.push(`<b>Flags:</b> ${flags.join(', ')}`);
+            }
+            if (geo.continent) details.push(`<b>Continent:</b> ${geo.continent}`);
+            if (geo.zip) details.push(`<b>ZIP:</b> ${geo.zip}`);
+            if (geo.latitude && geo.longitude) details.push(`<b>Location:</b> ${geo.latitude}, ${geo.longitude}`);
+            if (details.length) {
+              document.getElementById('isp-banner-details').innerHTML = details.join(' | ');
+            }
+            // Footer
+            const ispInfo = document.getElementById('isp-info');
+            let footerText = '';
+            if (network.isp) footerText += `ISP: ${network.isp}`;
+            if (network.asn) footerText += ` | ASN: ${network.asn}`;
+            if (geo.city) footerText += ` | City: ${geo.city}`;
+            if (geo.regionName) footerText += ` | Region: ${geo.regionName}`;
+            if (geo.country) footerText += ` | Country: ${geo.country}`;
+            if (basic.ip) footerText += ` | IP: ${basic.ip}`;
+            if (ispInfo && footerText) {
+              ispInfo.textContent = footerText;
+            }
+          });
       });
     // Set copyright info sesuai domain
     const copyrightInfo = document.getElementById('copyright-info');
@@ -222,6 +249,7 @@ please get in touch with support@openspeedtest.com.
       document.getElementById('isp-banner').style.display = 'none';
     };
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="assets/js/app-2.5.4.min.js"></script>
   <script src="assets/js/darkmode.js"></script>
 
