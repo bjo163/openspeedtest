@@ -155,10 +155,14 @@ please get in touch with support@openspeedtest.com.
   </div>
   <object style="visibility:hidden" id="OpenSpeedTest-UI" data="assets/images/app.svg" type="image/svg+xml"></object>
  
-  <div class="Credits">
-    <a id="dynamic-server-name" href="#">SpeedTest by OpenSpeedTest™</a> is a Free and <a href="https://github.com/openspeedtest/Speed-Test">Open-Source HTML5 Network Speed Test</a> Software.
-    <p style="font-size: 12px;">© Copyright 2013-2023 OpenSpeedTest™ All Rights Reserved.</p>
-</div>
+  <div class="Credits" style="background:#f8f9fa;padding:18px 0 10px 0;text-align:center;border-radius:8px;margin-top:24px;box-shadow:0 2px 12px rgba(0,0,0,0.07);">
+    <a id="dynamic-server-name" href="#" style="font-weight:bold;font-size:18px;color:#0078d7;text-decoration:none;">SpeedTest by OpenSpeedTest™</a>
+    <span id="isp-info" style="display:block;margin:8px 0 0 0;font-size:15px;color:#444;"></span>
+    <div style="margin:10px 0 0 0;font-size:13px;color:#666;">
+      is a Free and <a href="https://github.com/openspeedtest/Speed-Test" style="color:#0078d7;">Open-Source HTML5 Network Speed Test</a> Software.<br>
+      <span style="font-size: 12px;">© 2013-2023 OpenSpeedTest™. All Rights Reserved.</span>
+    </div>
+  </div>
   <script>
     // Ganti nama server di UI sesuai domain browser
     const domain = window.location.hostname;
@@ -167,6 +171,21 @@ please get in touch with support@openspeedtest.com.
       serverNameLink.textContent = `SpeedTest by ${domain}`;
       serverNameLink.href = `//${domain}`;
     }
+    // Ambil nama ISP dari IP publik
+    fetch('https://ipapi.co/json/')
+      .then(r => r.json())
+      .then(data => {
+        const ispInfo = document.getElementById('isp-info');
+        if (ispInfo && data.org && data.ip) {
+          ispInfo.textContent = `Your ISP: ${data.org} (IP: ${data.ip})`;
+        } else if (ispInfo && data.ip) {
+          ispInfo.textContent = `Your IP: ${data.ip}`;
+        }
+      })
+      .catch(() => {
+        const ispInfo = document.getElementById('isp-info');
+        if (ispInfo) ispInfo.textContent = '';
+      });
   </script>
   <script src="assets/js/app-2.5.4.min.js"></script>
   <script src="assets/js/darkmode.js"></script>
