@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  openspeedtest:
+    image: openspeedtest/latest
+    container_name: openspeedtest
+    restart: unless-stopped
+    environment:
+      # Basic Configuration
+      - CHANGE_CONTAINER_PORTS=false  # Set to True if you want to change default ports
+      - HTTP_PORT=3000
+      - HTTPS_PORT=3001
+      
+      # SSL/TLS Configuration
+      - ENABLE_LETSENCRYPT=false
+      - DOMAIN_NAME=false  # Set your domain name if using Let's Encrypt
+      - USER_EMAIL=false   # Set your email if using Let's Encrypt
+      
+      # Additional Configuration
+      - SET_SERVER_NAME=OpenSpeedTest-Server  # Display name on UI
+      # - ALLOW_ONLY=domain1.com;domain2.com  # Uncomment to restrict CORS
+      - SET_USER=101  # nginx user id
+      
+    ports:
+      - "3000:3000"  # HTTP port
+      - "3001:3001"  # HTTPS port
+    
+    volumes:
+      # Let's Encrypt volumes
+      - letsencrypt_logs:/var/log/letsencrypt
+      - letsencrypt_data:/etc/letsencrypt
+      - letsencrypt_lib:/var/lib/letsencrypt
+      # Uncomment below line and adjust path to use custom SSL certificates
+      # - ./ssl:/etc/ssl
+
+volumes:
+  letsencrypt_logs:
+  letsencrypt_data:
+  letsencrypt_lib:
