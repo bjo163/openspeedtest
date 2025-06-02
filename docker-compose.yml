@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   openspeedtest:
-    image: openspeedtest/latest
+    build: .  # Build from local Dockerfile
     container_name: openspeedtest
     restart: unless-stopped
     environment:
@@ -17,7 +17,6 @@ services:
       - USER_EMAIL=false   # Set your email if using Let's Encrypt
       
       # Additional Configuration
-      - SET_SERVER_NAME=OpenSpeedTest-Server  # Display name on UI
       # - ALLOW_ONLY=domain1.com;domain2.com  # Uncomment to restrict CORS
       - SET_USER=101  # nginx user id
       
