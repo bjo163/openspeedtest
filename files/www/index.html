@@ -175,25 +175,34 @@ please get in touch with support@openspeedtest.com.
       serverNameLink.textContent = `SpeedTest by ${domain}`;
       serverNameLink.href = `//${domain}`;
     }
-    // Ambil nama ISP dari IP publik dan tampilkan di banner atas
+    // Ambil nama ISP, ASN, dan info lain dari IP publik dan tampilkan di banner atas
     fetch('https://ipapi.co/json/')
       .then(r => r.json())
       .then(data => {
         const ispBanner = document.getElementById('isp-banner');
         const ispBannerContent = document.getElementById('isp-banner-content');
-        if (ispBanner && ispBannerContent && data.org && data.ip) {
-          ispBannerContent.textContent = `You are connected via ${data.org} (IP: ${data.ip})`;
-          ispBanner.style.display = 'block';
-        } else if (ispBanner && ispBannerContent && data.ip) {
-          ispBannerContent.textContent = `Your IP: ${data.ip}`;
+        let bannerText = '';
+        if (data.org) bannerText += `ISP: ${data.org}`;
+        if (data.asn) bannerText += ` | ASN: ${data.asn}`;
+        if (data.country_name) bannerText += ` | Country: ${data.country_name}`;
+        if (data.region) bannerText += ` | Region: ${data.region}`;
+        if (data.city) bannerText += ` | City: ${data.city}`;
+        if (data.ip) bannerText += ` | IP: ${data.ip}`;
+        if (ispBanner && ispBannerContent && bannerText) {
+          ispBannerContent.textContent = bannerText;
           ispBanner.style.display = 'block';
         }
         // Tetap isi info di footer juga
         const ispInfo = document.getElementById('isp-info');
-        if (ispInfo && data.org && data.ip) {
-          ispInfo.textContent = `Your ISP: ${data.org} (IP: ${data.ip})`;
-        } else if (ispInfo && data.ip) {
-          ispInfo.textContent = `Your IP: ${data.ip}`;
+        let footerText = '';
+        if (data.org) footerText += `ISP: ${data.org}`;
+        if (data.asn) footerText += ` | ASN: ${data.asn}`;
+        if (data.country_name) footerText += ` | Country: ${data.country_name}`;
+        if (data.region) footerText += ` | Region: ${data.region}`;
+        if (data.city) footerText += ` | City: ${data.city}`;
+        if (data.ip) footerText += ` | IP: ${data.ip}`;
+        if (ispInfo && footerText) {
+          ispInfo.textContent = footerText;
         }
       })
       .catch(() => {
